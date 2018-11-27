@@ -1,0 +1,5 @@
+MNIST data should be placed in this folder. 
+
+Download the data from: http://yann.lecun.com/exdb/mnist/
+
+Get all 4 files.

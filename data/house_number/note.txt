@@ -1,0 +1,5 @@
+House number data should be placed in this folder. 
+
+Download the data from: http://ufldl.stanford.edu/housenumbers/
+
+Files to download: train_32x32.mat, test_32x32.mat

@@ -1,0 +1,5 @@
+Fashion Mnist data should be placed in this folder. 
+
+Download the data from: https://github.com/zalandoresearch/fashion-mnist
+
+Get all 4 files.
