@@ -1,5 +1,5 @@
 from sklearn.decomposition import MiniBatchDictionaryLearning, sparse_encode, PCA
-from sklearn.svm import SVC
+from sklearn.svm import SVC #, LinearSVC
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import GridSearchCV
 import itertools
@@ -20,8 +20,9 @@ def learn_representation_for_labeled_data(labeled_examples, dictionary, max_iter
 def SVM_classifier(examples, labels, epsilon=0.001, max_iter=-1):
     lamb_das = [0.01, 0.1, 0.5, 1, 3, 5]
     gammas = [0.001, 0.01, 0.1, 0.5, 1, 2, 3]
+    degrees = [1,2,3]
     kernels = ['rbf','poly']#['rbf','poly','linear']
-    param_grid = {'kernel':kernels,'C':lamb_das,'gamma':gammas}
+    param_grid = {'kernel':kernels,'C':lamb_das,'gamma':gammas, 'degree':degrees}
     estimator = SVC(tol=epsilon, max_iter=max_iter)
     grid_search = GridSearchCV(estimator, param_grid, cv=5, n_jobs=-1, verbose=10)
     grid_search.fit(examples, labels.ravel())
