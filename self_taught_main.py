@@ -5,27 +5,28 @@ from get_data import *
 
 NUM_FOLD = 5
 def main():
-    if len(sys.argv) != 4:
-        raise Exeption("Inappropriate number of arguments. Require 3.")
+    if len(sys.argv) != 5:
+        raise Exception("Inappropriate number of arguments. Require 4.")
     unlabeled_data_name = str(sys.argv[1])
     labeled_data_name= str(sys.argv[2])
     run_on_full_sample = int(sys.argv[3])
+    EECS440 = int(sys.argv[4])
 
     if unlabeled_data_name == 'fashion_mnist':
-        unlabeled_examples = get_fashion_mnist(1000, unlabeled=True)
+        unlabeled_examples = get_fashion_mnist(200, unlabeled=True)
     elif unlabeled_data_name == 'mnist':
-        unlabeled_examples = get_mnist(1000, unlabeled=True)
+        unlabeled_examples = get_mnist(200, unlabeled=True)
     elif unlabeled_data_name == 'house_number':
-        unlabeled_examples = get_house_number(1000, unlabeled=True)
+        unlabeled_examples = get_house_number(200, unlabeled=True)
 
     if labeled_data_name == 'fashion_mnist':
-        labeled_examples, labels = get_fashion_mnist(2000)
+        labeled_examples, labels = get_fashion_mnist(600)
         test_examples, test_labels = get_fashion_mnist(500, test=True)
     elif labeled_data_name == 'mnist':
-        labeled_examples, labels = get_mnist(2000)
+        labeled_examples, labels = get_mnist(600)
         test_examples, test_labels = get_mnist(500, test=True)
     elif labeled_data_name == 'house_number':
-        labeled_examples, labels = get_house_number(2000)
+        labeled_examples, labels = get_house_number(600)
         test_examples, test_labels = get_house_number(500, test=True)
 
     # Learn basis
@@ -40,12 +41,17 @@ def main():
     new_test_examples = learn_representation_for_labeled_data(test_examples, basis, 1000)
 
     if run_on_full_sample:
-        # Learn a SVC with model selection
-        print("START CLASSIFIER")
-        classifier = SVM_classifier(new_labeled_examples, labels, epsilon=0.000001)
-        # Validation
-        print("START EVALUATION")
-        run_evaluation(new_test_examples, test_labels, classifier, plot=True, title=unlabeled_data_name + ' ' + labeled_data_name)
+        if EECS440:
+            # Learn a SVC with model selection
+            print("START CLASSIFIER")
+            classifier = SVM_classifier(new_labeled_examples, labels, epsilon=0.000001, fold_num=3, EECS440=True)
+        else:
+            # Learn a SVC with model selection
+            print("START CLASSIFIER")
+            classifier = SVM_classifier(new_labeled_examples, labels, epsilon=0.000001, fold_num=5)
+            # Validation
+            print("START EVALUATION")
+            run_evaluation(new_test_examples, test_labels, classifier, plot=True, title=unlabeled_data_name + ' ' + labeled_data_name)
     else:
         pass
 

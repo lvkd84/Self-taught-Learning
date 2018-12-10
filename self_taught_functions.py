@@ -1,7 +1,7 @@
 from sklearn.decomposition import MiniBatchDictionaryLearning, sparse_encode, PCA
 from sklearn.svm import SVC #, LinearSVC
 from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,16 +17,38 @@ def learn_basis_from_unlabeled_data(unlabeled_examples, num_components, alpha, m
 def learn_representation_for_labeled_data(labeled_examples, dictionary, max_iter):
     return sparse_encode(labeled_examples, dictionary, max_iter=max_iter)
 
-def SVM_classifier(examples, labels, epsilon=0.001, max_iter=-1):
+def SVM_classifier(examples, labels, epsilon=0.001, max_iter=-1, fold_num=3, EECS440=False):
     lamb_das = [0.01, 0.1, 0.5, 1, 3, 5]
     gammas = [0.001, 0.01, 0.1, 0.5, 1, 2, 3]
-    degrees = [1,2,3]
-    kernels = ['rbf','poly']#['rbf','poly','linear']
+    degrees = [2,3]
+    kernels = ['poly']#['rbf','poly','linear']
     param_grid = {'kernel':kernels,'C':lamb_das,'gamma':gammas, 'degree':degrees}
     estimator = SVC(tol=epsilon, max_iter=max_iter)
-    grid_search = GridSearchCV(estimator, param_grid, cv=5, n_jobs=-1, verbose=10)
-    grid_search.fit(examples, labels.ravel())
-    return grid_search.best_estimator_
+    if EECS440:
+        fold_splitter = StratifiedKFold(fold_num, random_state=12345)
+        #folds = fold_splitter.split(examples, labels)
+        grid_search = GridSearchCV(estimator, param_grid, cv=fold_splitter, n_jobs=-1, verbose=10)
+        grid_search.fit(examples, labels.ravel())
+        best_estimator = grid_search.best_estimator_
+        print('Accuracy', grid_search.best_score_)
+        fold_accuracy = list()
+        for train_index, test_index in fold_splitter.split(examples, labels):
+            class_accuracy = np.zeros((10,))
+            train_examples = examples[train_index]; train_labels = labels[train_index]
+            test_examples = examples[test_index]; test_labels = labels[test_index]
+            best_estimator.fit(train_examples, train_labels)
+            predicted_labels = best_estimator.predict(test_examples)
+            for idx in range(len(test_labels)):
+                if test_labels[idx] == predicted_labels[idx]:
+                    class_accuracy[test_labels[idx]] = class_accuracy[test_labels[idx]] + 1
+            class_accuracy = class_accuracy / (len(examples) / (10*fold_num))
+            fold_accuracy.append(class_accuracy)
+        print(fold_accuracy)
+        return fold_accuracy
+    else:
+        grid_search = GridSearchCV(estimator, param_grid, cv=fold_num, n_jobs=-1, verbose=10)
+        grid_search.fit(examples, labels.ravel())
+        return grid_search.best_estimator_
 
 def run_evaluation(test_examples, test_labels, classifier, plot=False, title=None):
     predicted_labels = classifier.predict(test_examples)

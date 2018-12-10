@@ -23,7 +23,7 @@ def main():
     if run_on_full_sample:
         # Learn a SVC with model selection
         print("START CLASSIFIER")
-        classifier = SVM_classifier(labeled_examples, labels, epsilon=0.000001)
+        classifier = SVM_classifier(labeled_examples, labels, epsilon=0.000001, fold_num=5)
         # Validation
         print("START EVALUATION")
         run_evaluation(test_examples, test_labels, classifier, plot=True, title=labeled_data_name)
